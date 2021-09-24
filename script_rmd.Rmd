@@ -1,8 +1,8 @@
 ---
 title: "Data Wrangling (Data Preprocessing)"
-author: "Student name submitting the assessment report come here"
+author: "Jeremy Jian Zhi Chia"
 subtitle: Practical assessment 2
-date: ""
+date: "25/09/2021"
 output:
   html_notebook: default
   pdf_document: default
@@ -19,7 +19,11 @@ output:
 
 library(kableExtra)
 library(magrittr)
-
+library(dplyr)
+library(tidyr)
+library(readr)
+library(readxl)
+library(ggplot2)
 
 ```
 
@@ -29,9 +33,9 @@ library(magrittr)
 
 # Add your names, numbers and percentage of your contribution here.
 
-na<- c(" name1"," name2")
-no<- c(" number1","  number2")
-pc<- c("Percentage1","Percentage2")
+na<- c("Jeremy Jian Zhi Chia")
+no<- c("s3917515")
+pc<- c("100%")
 
 s<- data.frame(cbind(na,no,pc))
 colnames(s)<- c("Student name", "Student number", "Percentage of contribution")

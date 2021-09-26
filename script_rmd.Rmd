@@ -116,11 +116,14 @@ criminal_incidents_charge_status <- read_excel("data/Data_Tables_LGA_Criminal_In
 suburb_lga <- criminal_incidents_lga_suburb %>% select(`Suburb/Town Name`, `Local Government Area`) %>% unique
 suburb_lga %>% head(10)
 ```
+A dataframe of each suburbs and their corresponding LGAs are created using the criminal incidents by LGA and suburb dataset. This allows for identifying which LGA a particular suburb belong to.
+
 ```{r}
 # Lowering and capitalising suburb names in House Median Prices dataset
 house_medians$SUBURB <- house_medians$SUBURB %>% tolower() %>% tools::toTitleCase()
 house_medians$SUBURB %>% head(10)
 ```
+To allow for joining of the house median prices dataset with the Suburb-LGA dataset created above, the values of each containing the suburb names must match between the datasets. Therefore, they are converted from all uppercase to lowercase and title case.
 
 ```{r}
 # Joining suburb and LGA dataframe with house median prices
@@ -131,6 +134,7 @@ house_medians <- house_medians[,c("SUBURB", "Local Government Area", "Jul - Sep 
 
 house_medians %>% head(10)
 ```
+The house median prices dataset and the suburb-LGA dataset are joined together. They are rearranged so that the Suburb and LGA columns are side-to-side.
 
 ```{r}
 # Joining house median prices with criminal incidents by LGA and Suburb
@@ -138,33 +142,91 @@ house_medians_criminal_incidents <- house_medians %>% left_join(criminal_inciden
 
 house_medians_criminal_incidents %>% head()
 ```
+The house median prices and suburb-LGA datasets are then joined with the criminal incidents by suburb/LGA dataset which shows various types of offences that occurred within that suburb at any given time period.
+
 ```{r}
 # Joining house median criminal incidents df created above with criminal incidents charge status
 house_medians_criminal_incidents <- house_medians_criminal_incidents %>% left_join(criminal_incidents_charge_status, by = c("Local Government Area", "Year", "Year ending"))
 
 house_medians_criminal_incidents %>% head()
 ```
+The criminal incidents by charge status is joined with the other datasets above. This dataset shows the charge statuses of the crime incidents and their recorded number of incidents by LGA. There are a total of four datasets that have been merged above. 
 
 <br>
 <br>
 
 ## **Understand** 
-
+```{r}
+# Inspect attributes
+house_medians_criminal_incidents %>% attributes()
+```
+Upon inspecting of the attributes, some of the variables names can be renamed for improved clarity.
 
 ```{r}
-# This is the R chunk for the Understand Section
+# Renaming of columns
+names(house_medians_criminal_incidents)[names(house_medians_criminal_incidents) == "SUBURB"] <- "Suburb"
+names(house_medians_criminal_incidents)[names(house_medians_criminal_incidents) == "Incidents Recorded.x"] <- "No. of Incidents Recorded (Suburb)"
+names(house_medians_criminal_incidents)[names(house_medians_criminal_incidents) == "Incidents Recorded.y"] <- "No. of Incidents Recorded (LGA)"
+
+# Checking new column names
+house_medians_criminal_incidents %>% colnames()
 ```
 
-Provide explanations here. 
+```{r}
+# Inspect structure of dataset
+house_medians_criminal_incidents %>% str()
+```
+Upon inspecting the structure of the dataset, there are some obvious mistakes in classifying the data types of the variables. Some of the variables such as median house prices over specific periods should be stored as numerics instead of characters. Furthermore, certain variables such as suburb, LGA, postcode should be stored as factors as they can be deemed as data that can be categorised.
 
+```{r}
+# Converting the data structures of variables
+
+# Converting characters to numeric data types
+house_medians_criminal_incidents$`Jul - Sep 19` <- house_medians_criminal_incidents$`Jul - Sep 19` %>% as.numeric()
+house_medians_criminal_incidents$`Oct - Dec 19` <- house_medians_criminal_incidents$`Oct - Dec 19` %>% as.numeric()
+house_medians_criminal_incidents$`Jan - Mar 20` <- house_medians_criminal_incidents$`Jan - Mar 20` %>% as.numeric()
+house_medians_criminal_incidents$`Apr- Jun 20` <- house_medians_criminal_incidents$`Apr- Jun 20` %>% as.numeric()
+house_medians_criminal_incidents$`Jul - Sep 20` <- house_medians_criminal_incidents$`Jul - Sep 20` %>% as.numeric()
+house_medians_criminal_incidents$`No of Sales YTD` <- house_medians_criminal_incidents$`No of Sales YTD` %>% as.numeric()
+house_medians_criminal_incidents$`Change % Jul - Sep 19 Jul - Sep 20` <- house_medians_criminal_incidents$`Change % Jul - Sep 19 Jul - Sep 20` %>% as.numeric()
+house_medians_criminal_incidents$`Change % Apr - Jun 20 Jul - Sep 20` <- house_medians_criminal_incidents$`Change % Apr - Jun 20 Jul - Sep 20` %>% as.numeric()
+
+# Checking structure after conversion
+house_medians_criminal_incidents %>% str()
+```
+```{r}
+# Converting characters to factors
+house_medians_criminal_incidents$Suburb <- house_medians_criminal_incidents$Suburb %>% as.factor()
+house_medians_criminal_incidents$`Local Government Area` <- house_medians_criminal_incidents$`Local Government Area` %>% as.factor()
+house_medians_criminal_incidents$Postcode <- house_medians_criminal_incidents$Postcode %>% as.factor()
+house_medians_criminal_incidents$Year <- house_medians_criminal_incidents$Year %>% as.factor()
+house_medians_criminal_incidents$`Year ending` <- house_medians_criminal_incidents$`Year ending` %>% as.factor()
+house_medians_criminal_incidents$`Offence Division` <- house_medians_criminal_incidents$`Offence Division` %>% as.factor()
+house_medians_criminal_incidents$`Offence Subdivision` <- house_medians_criminal_incidents$`Offence Subdivision` %>% as.factor()
+house_medians_criminal_incidents$`Offence Subgroup` <- house_medians_criminal_incidents$`Offence Subgroup` %>% as.factor()
+house_medians_criminal_incidents$`Charge Status` <- house_medians_criminal_incidents$`Charge Status` %>% as.factor()
+
+# View structure
+house_medians_criminal_incidents %>% str()
+```
+The output above displays the structure of the dataframe after conversion of various data types. Categorical variables are converted to factors to allow further analysis to be done on any given factor. There are no ordered factors. Numerical variables that are previously character variables are treated and converted to the numerical data type.
+
+```{r}
+# Rearranging variables within dataframe
+house_medians_criminal_incidents <- house_medians_criminal_incidents[,c("Suburb", "Postcode", "Local Government Area", "Jul - Sep 19", "Oct - Dec 19", "Jan - Mar 20", "Apr- Jun 20", "Jul - Sep 20", "No of sales Jul - Sep 20", "No of Sales YTD", "Change % Jul - Sep 19 Jul - Sep 20", "Change % Apr - Jun 20 Jul - Sep 20", "Year", "Year ending", "Offence Division", "Offence Subdivision", "Offence Subgroup", "No. of Incidents Recorded (Suburb)", "No. of Incidents Recorded (LGA)", "Charge Status")]
+
+# View dataframe
+house_medians_criminal_incidents %>% head()
+```
 <br>
 <br>
 
 ##	**Tidy & Manipulate Data I **
 
+- change period of interest to 2019/2020
 
 ```{r}
-# This is the R chunk for the Tidy & Manipulate Data I 
+# 
 
 ```
 

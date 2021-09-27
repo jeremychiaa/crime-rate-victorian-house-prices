@@ -287,12 +287,21 @@ house_medians_criminal_incidents <- house_medians_criminal_incidents %>% filter(
 # View dataframe
 house_medians_criminal_incidents %>% head()
 ```
-The columns are rearranged for organisation and Q3 2019 of median house prices are exluded since the time frame of interest is Q4 2019 to Q3 2020.
+The columns are rearranged for organisation and Q3 2019 of median house prices are excluded since the time frame of interest is Q4 2019 to Q3 2020.
 
 ```{r}
-# Refactoring of newly created variables
+# Factoring of newly created variables
+# Storing supposed factor columns as an object
+fac_cols1 <- c("Quarter", "Year", "Charge Status")
+
+# Converting characters to factors
+house_medians_criminal_incidents[fac_cols1] <- lapply(house_medians_criminal_incidents[fac_cols1], as.factor)
+
+# View structure
 house_medians_criminal_incidents %>% str()
 ```
+The newly created variables from the pivot_longer() and separate() functions were stored as characters. They are then converted to unordered factors.
+
 <br>
 <br>
 

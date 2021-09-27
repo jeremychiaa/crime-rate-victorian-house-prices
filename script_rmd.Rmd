@@ -165,8 +165,6 @@ Upon inspecting of the attributes, some of the variables names can be renamed fo
 ```{r}
 # Renaming of columns
 names(house_medians_criminal_incidents)[names(house_medians_criminal_incidents) == "SUBURB"] <- "Suburb"
-names(house_medians_criminal_incidents)[names(house_medians_criminal_incidents) == "Incidents Recorded.x"] <- "No. of Incidents Recorded (Suburb)"
-names(house_medians_criminal_incidents)[names(house_medians_criminal_incidents) == "Incidents Recorded.y"] <- "No. of Incidents Recorded (LGA)"
 
 # Checking new column names
 house_medians_criminal_incidents %>% colnames()
@@ -181,30 +179,21 @@ Upon inspecting the structure of the dataset, there are some obvious mistakes in
 ```{r}
 # Converting the data structures of variables
 
+# Storing supposed numeric columns as an object
+numeric_cols <- c("Jul - Sep 19", "Oct - Dec 19", "Jan - Mar 20", "Apr- Jun 20", "Jul - Sep 20", "No of Sales YTD", "Change % Jul - Sep 19 Jul - Sep 20", "Change % Apr - Jun 20 Jul - Sep 20")
+
 # Converting characters to numeric data types
-house_medians_criminal_incidents$`Jul - Sep 19` <- house_medians_criminal_incidents$`Jul - Sep 19` %>% as.numeric()
-house_medians_criminal_incidents$`Oct - Dec 19` <- house_medians_criminal_incidents$`Oct - Dec 19` %>% as.numeric()
-house_medians_criminal_incidents$`Jan - Mar 20` <- house_medians_criminal_incidents$`Jan - Mar 20` %>% as.numeric()
-house_medians_criminal_incidents$`Apr- Jun 20` <- house_medians_criminal_incidents$`Apr- Jun 20` %>% as.numeric()
-house_medians_criminal_incidents$`Jul - Sep 20` <- house_medians_criminal_incidents$`Jul - Sep 20` %>% as.numeric()
-house_medians_criminal_incidents$`No of Sales YTD` <- house_medians_criminal_incidents$`No of Sales YTD` %>% as.numeric()
-house_medians_criminal_incidents$`Change % Jul - Sep 19 Jul - Sep 20` <- house_medians_criminal_incidents$`Change % Jul - Sep 19 Jul - Sep 20` %>% as.numeric()
-house_medians_criminal_incidents$`Change % Apr - Jun 20 Jul - Sep 20` <- house_medians_criminal_incidents$`Change % Apr - Jun 20 Jul - Sep 20` %>% as.numeric()
+house_medians_criminal_incidents[numeric_cols] <- sapply(house_medians_criminal_incidents[numeric_cols], as.numeric)
 
 # Checking structure after conversion
 house_medians_criminal_incidents %>% str()
 ```
 ```{r}
+# Storing supposed factor columns as an object
+fac_cols <- c("Suburb", "Local Government Area", "Postcode", "Year", "Year ending", "Offence Division", "Offence Subdivision", "Offence Subgroup")
+
 # Converting characters to factors
-house_medians_criminal_incidents$Suburb <- house_medians_criminal_incidents$Suburb %>% as.factor()
-house_medians_criminal_incidents$`Local Government Area` <- house_medians_criminal_incidents$`Local Government Area` %>% as.factor()
-house_medians_criminal_incidents$Postcode <- house_medians_criminal_incidents$Postcode %>% as.factor()
-house_medians_criminal_incidents$Year <- house_medians_criminal_incidents$Year %>% as.factor()
-house_medians_criminal_incidents$`Year ending` <- house_medians_criminal_incidents$`Year ending` %>% as.factor()
-house_medians_criminal_incidents$`Offence Division` <- house_medians_criminal_incidents$`Offence Division` %>% as.factor()
-house_medians_criminal_incidents$`Offence Subdivision` <- house_medians_criminal_incidents$`Offence Subdivision` %>% as.factor()
-house_medians_criminal_incidents$`Offence Subgroup` <- house_medians_criminal_incidents$`Offence Subgroup` %>% as.factor()
-house_medians_criminal_incidents$`Charge Status` <- house_medians_criminal_incidents$`Charge Status` %>% as.factor()
+house_medians_criminal_incidents[fac_cols] <- lapply(house_medians_criminal_incidents[fac_cols], as.factor)
 
 # View structure
 house_medians_criminal_incidents %>% str()
@@ -213,25 +202,97 @@ The output above displays the structure of the dataframe after conversion of var
 
 ```{r}
 # Rearranging variables within dataframe
-house_medians_criminal_incidents <- house_medians_criminal_incidents[,c("Suburb", "Postcode", "Local Government Area", "Jul - Sep 19", "Oct - Dec 19", "Jan - Mar 20", "Apr- Jun 20", "Jul - Sep 20", "No of sales Jul - Sep 20", "No of Sales YTD", "Change % Jul - Sep 19 Jul - Sep 20", "Change % Apr - Jun 20 Jul - Sep 20", "Year", "Year ending", "Offence Division", "Offence Subdivision", "Offence Subgroup", "No. of Incidents Recorded (Suburb)", "No. of Incidents Recorded (LGA)", "Charge Status")]
+house_medians_criminal_incidents <- house_medians_criminal_incidents[,c("Suburb", "Postcode", "Local Government Area", "Jul - Sep 19", "Oct - Dec 19", "Jan - Mar 20", "Apr- Jun 20", "Jul - Sep 20", "No of sales Jul - Sep 20", "No of Sales YTD", "Change % Jul - Sep 19 Jul - Sep 20", "Change % Apr - Jun 20 Jul - Sep 20", "Year", "Year ending", "Offence Division", "Offence Subdivision", "Offence Subgroup", "Incidents Recorded", "Charges laid", "No charges laid", "Unsolved")]
 
 # View dataframe
 house_medians_criminal_incidents %>% head()
 ```
+```{r}
+# Filtering rows
+house_medians_criminal_incidents <- house_medians_criminal_incidents %>% filter(Year == "2020")
+
+# Renaming column
+names(house_medians_criminal_incidents)[names(house_medians_criminal_incidents) == "Year"] <- "Crime Year" 
+
+# View dataframe
+house_medians_criminal_incidents$`Crime Year` %>% unique()
+```
+The crime incidents dataset reports crime incidents for the year ending September 2020. Thus, the time frame for one year from October 2019 to September 2020. As the time frame of interest for this project is only for the year ending Sept 2020, the dataset is filtered to only display the crimes that are committed in the year 2020.
+
 <br>
 <br>
 
 ##	**Tidy & Manipulate Data I **
-
-- change period of interest to 2019/2020
+```{r}
+# Display section of untidy data
+house_medians_criminal_incidents %>% select("Charges laid", "No charges laid", "Unsolved")
+```
+The above output displays portion of the data that do not conform to the tidy data rules. "Charges laid", "No charges laid" and "Unsolved" are values of a variable, not a variable of its own. 
 
 ```{r}
-# 
+# Transform data
+house_medians_criminal_incidents <- house_medians_criminal_incidents %>% pivot_longer(names_to = "Charge Status", values_to = "No. of Incidents Recorded (LGA)", cols = c("Charges laid", "No charges laid", "Unsolved"))
 
+# View transformed data
+house_medians_criminal_incidents %>% select("Charge Status", "No. of Incidents Recorded (LGA)")
 ```
+The pivot_longer() function was applied on the columns that required to be transformed from wide to long format. A variable name "Charge Status" was assigned to represent the values "Charges laid", "No charges laid" and "Unsolved". A "No. of Incidents Recorded (LGA)" variable was created to represent the number of recorded criminal incidents within any given LGA that were either charged, not charged or unsolved.
 
-Provide explanations here. 
+```{r}
+# Display other section of data that requires tidying
+house_medians_criminal_incidents %>% select("Jul - Sep 19", "Oct - Dec 19", "Jan - Mar 20", "Apr- Jun 20", "Jul - Sep 20")
+```
+The above output displays the median house prices of multiple quarters within the years 2019 and 2020. These quarters are stored as variables. However, they represent the values of annually quarters.
 
+```{r}
+# Transform data
+house_medians_criminal_incidents <- house_medians_criminal_incidents %>% pivot_longer(names_to = "Quarter / Year", values_to = "Median Price", cols = c("Jul - Sep 19", "Oct - Dec 19", "Jan - Mar 20", "Apr- Jun 20", "Jul - Sep 20"))
+
+# View transformed data
+house_medians_criminal_incidents %>% select("Quarter / Year", "Median Price")
+```
+A variable name "Quarter / Year" was assigned to represent the values "Jul - Sep 19", "Oct - Dec 19", "Jan - Mar 20", "Apr- Jun 20", "Jul - Sep 20". A "Median Price" variable was created to show the median house price at any given quarter.
+
+The "Quarter / Year" variable displays each quarter and their respective year within each cell. This shows two values within each cell across all cells within that variable. Therefore, this can be further improved by seperating the quarter and the year into different columns.
+
+```{r}
+# Replace months and years with appropriate names
+house_medians_criminal_incidents$`Quarter / Year`[house_medians_criminal_incidents$`Quarter / Year` == "Jul - Sep 19"] <- "Q3 2019"
+house_medians_criminal_incidents$`Quarter / Year`[house_medians_criminal_incidents$`Quarter / Year` == "Oct - Dec 19"] <- "Q4 2019"
+house_medians_criminal_incidents$`Quarter / Year`[house_medians_criminal_incidents$`Quarter / Year` == "Jan - Mar 20"] <- "Q1 2020"
+house_medians_criminal_incidents$`Quarter / Year`[house_medians_criminal_incidents$`Quarter / Year` == "Apr- Jun 20"] <- "Q2 2020"
+house_medians_criminal_incidents$`Quarter / Year`[house_medians_criminal_incidents$`Quarter / Year` == "Jul - Sep 20"] <- "Q3 2020"
+
+house_medians_criminal_incidents$`Quarter / Year` %>% unique()
+```
+Before separating the variables, the names of values of "Quarter / Year" are renamed to their respective quarters and years for improved clarity.
+
+```{r}
+# Separating Quarter and Year into different columns
+house_medians_criminal_incidents <- house_medians_criminal_incidents %>% separate(`Quarter / Year`, into = c("Quarter", "Year"), sep = " ")
+house_medians_criminal_incidents %>% select("Quarter", "Year")
+```
+Since multiple variables (months and year) are stored in one column, they are then split into two seperate columns. The months (Jan-Mar, Apr-Jun, Jul-Sep, Oct-Dec) could potentially be confusing so they are renamed to Q1, Q2, Q3 and Q4 respectively. Hence, these variables now have their own columns with values located in each cell.
+
+```{r}
+# Rearranging of variables
+house_medians_criminal_incidents <- house_medians_criminal_incidents[,c("Suburb", "Postcode", "Local Government Area", "Quarter", "Year", "Median Price", "No of sales Jul - Sep 20", "No of Sales YTD", "Change % Jul - Sep 19 Jul - Sep 20", "Change % Apr - Jun 20 Jul - Sep 20", "Crime Year", "Year ending", "Offence Division", "Offence Subdivision", "Offence Subgroup", "Incidents Recorded", "Charge Status", "No. of Incidents Recorded (LGA)")]
+
+# Rename column "Incidents Recorded"
+names(house_medians_criminal_incidents)[names(house_medians_criminal_incidents) == "Incidents Recorded"] <- "Incidents Recorded (Suburb)"
+
+# Excluding Q3 2019 of median house prices
+house_medians_criminal_incidents <- house_medians_criminal_incidents %>% filter(!(Quarter == "Q3" & Year == 2019))
+
+# View dataframe
+house_medians_criminal_incidents %>% head()
+```
+The columns are rearranged for organisation and Q3 2019 of median house prices are exluded since the time frame of interest is Q4 2019 to Q3 2020.
+
+```{r}
+# Refactoring of newly created variables
+house_medians_criminal_incidents %>% str()
+```
 <br>
 <br>
 

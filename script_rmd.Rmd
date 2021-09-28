@@ -26,7 +26,7 @@ library(readxl)
 library(openxlsx)
 library(ggplot2)
 library(tools)
-
+library(editrules)
 ```
 
 
@@ -194,7 +194,7 @@ Upon inspecting the structure of the dataset, there are some obvious mistakes in
 numeric_cols <- c("Jul - Sep 19", "Oct - Dec 19", "Jan - Mar 20", "Apr- Jun 20", "Jul - Sep 20", "No of Sales YTD", "Change % Jul - Sep 19 Jul - Sep 20", "Change % Apr - Jun 20 Jul - Sep 20")
 
 # Converting characters to numeric data types
-house_medians_criminal_incidents[numeric_cols] <- sapply(house_medians_criminal_incidents[numeric_cols], as.numeric)
+house_medians_criminal_incidents[numeric_cols] <- lapply(house_medians_criminal_incidents[numeric_cols], as.numeric)
 
 # Checking structure after conversion
 house_medians_criminal_incidents %>% str()
@@ -317,23 +317,74 @@ The above output shows the number of missing values in each column of the datafr
 na_count/dim(house_medians_criminal_incidents)[1]
 ```
 From the above proportion table, there are 4 columns that have 1.38% null values and one column with 1.12% null values.
-In hindsight, the missing values are the same across the Postcode, Offence Division, Total Offence Division Count (Year) and the Average Offence Division Count / Quarter due to the joining/merging of the datasets earlier. As the first dataset of House Median Prices contained all median prices of houses for each suburb (from performing a left join), the missing values were caused by the second dataset of Criminal Incidents by Suburb and LGA. This simply means that despite there being median prices for the suburbs, there were no records of criminal incidents for those suburbs.
+In hindsight, the missing values are the same across the "Postcode", "Offence Division", "Total Offence Division Count (Year)" and the "Average Offence Division Count / Quarter" due to the joining/merging of the datasets earlier. As the first dataset of House Median Prices contained all median prices of houses for each suburb (from performing a left join), the missing values were caused by the second dataset of Criminal Incidents by Suburb and LGA. This simply means that despite there being median prices for the suburbs, there were no records of criminal incidents for those suburbs.
 
 ```{r}
-
+# View rows with missing values
+house_medians_criminal_incidents[!complete.cases(house_medians_criminal_incidents), ]
 ```
+Upon inspection of the above output of rows with missing values, it can be confirmed that most of the rows with missing values had one thing in common, is that they do not have records of criminal incidents. They all do not have values for the "Postcode", "Local Government Area", Offence Division", "Total Offence Division Count (Year)" and the "Average Offence Division Count / Quarter" columns.
+
+However, there are some rows that has LGAs matched to suburbs but not values for "Postcode", "Offence Division", "Total Offence Division Count (Year)" and the "Average Offence Division Count / Quarter".
+
+This observation confirms the above hypothesis as to why the missing values were consistent across all rows with NAs. That is despite there being median prices for the suburbs, there were no records of criminal incidents for those suburbs.
+
+```{r}
+# Maintaining just complete cases
+house_medians_criminal_incidents <- house_medians_criminal_incidents[complete.cases(house_medians_criminal_incidents), ]
+
+# Display dataframe
+house_medians_criminal_incidents
+```
+```{r}
+# Display range of `Total Offence Division Count (Year)
+house_medians_criminal_incidents$`Total Offence Division Count (Year)` %>% range(na.rm = T)
+```
+```{r}
+# Display range of Average Offence Division Count / Quarter
+house_medians_criminal_incidents$`Average Offence Division Count / Quarter` %>% range(na.rm = T)
+```
+Total number of rows dropped is 17360 - 17120 = 240. That is 1.38% of observations dropped from the entire dataframe. This small proportion is insignificant relative to the size of the dataset. Therefore, it is safe to leave out these observations to avoid bias to the analysis.
+
+As the purpose of joining these datasets is to investigate the relationship between crime incidents and house median prices, there would be no meaning to maintain these observations. So, these rows that contain NAs are dropped and only rows with complete cases are maintained.
+
+The reason behind this decision to drop NAs is that it is not safe to assume that these suburbs did not have criminal incident records because there were simply no crimes committed. Hence, imputing a numerical value of 0 into variables "Total Offence Division Count (Year)" and the "Average Offence Division Count / Quarter" would not be a safe assumption to make.
+
+As there exists many types of offence divisions, it would be unrealistic just to impute the missing categorical values with the mode. Even if the decision to impute the "Offence Division" is made, it would also be unsafe to impute the missing "Total Offence Division Count (Year)" and the "Average Offence Division Count / Quarter" values due to the large range (min-max) values of those columns.
+
+In conclusion, as the sole purpose is still to investigate the relationship between crime incidents and house median prices, these missing values are not imputed as they require certainty and objectivity for accurate analysis.
+
+```{r}
+# Check for special values
+sapply(house_medians_criminal_incidents, function(x) sum(is.infinite(x)))
+```
+There are no special values within each cell of the dataframe. All values are finite.
+
+```{r}
+# Checking for inconsistencies
+# Create object for columns that store numerical values
+num_cols <- c("Median Price", "Total Offence Division Count (Year)", "Average Offence Division Count / Quarter")
+
+# Check for values less than 0
+sapply(house_medians_criminal_incidents[num_cols], function(x) sum(x < 0))
+```
+As the "Median Price", "Total Offence Division Count (Year)" and "Average Offence Division Count / Quarter" all require positive values, a function is applied to find if these columns contain any values that are less than 0. The output of the function found that there are no inconsistencies in these numerical values.
+
 <br>
 <br>
 
 ##	**Scan II**
 
 ```{r}
-# This is the R chunk for the Scan II
-
+# Visualise potential outliers on a boxplot
+house_medians_criminal_incidents$`Median Price` %>% boxplot(main = "Boxplot of Median Price", ylab="Price ($)")
 ```
 
 Provide explanations here. 
 
+```{r}
+hist(house_medians_criminal_incidents$`Median Price`)
+```
 <br>
 <br>
 

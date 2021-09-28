@@ -91,7 +91,6 @@ Variables:
 
 
 ```{r}
-
 # Import the data, provide your R codes here.
 
 # House median prices dataset
@@ -104,11 +103,6 @@ crime_rate <- read_excel("data/Data_Tables_LGA_Criminal_Incidents_Year_Ending_Se
 # Criminal incidents by LGA and suburb dataset
 criminal_incidents_lga_suburb <- read_excel("data/Data_Tables_LGA_Criminal_Incidents_Year_Ending_September_2020.xlsx%3F8rMGzuMnVt5oC9mV_AAn_dmq1tfyPo9T=.xlsx", 
     sheet = "Table 03")
-
-# Criminal incidents by charge status and LGA
-criminal_incidents_charge_status <- read_excel("data/Data_Tables_LGA_Criminal_Incidents_Year_Ending_September_2020.xlsx%3F8rMGzuMnVt5oC9mV_AAn_dmq1tfyPo9T=.xlsx", 
-    sheet = "Table 05")
-
 ```
 
 ```{r}
@@ -137,20 +131,31 @@ house_medians %>% head(10)
 The house median prices dataset and the suburb-LGA dataset are joined together. They are rearranged so that the Suburb and LGA columns are side-to-side.
 
 ```{r}
-# Joining house median prices with criminal incidents by LGA and Suburb
-house_medians_criminal_incidents <- house_medians %>% left_join(criminal_incidents_lga_suburb, by=c("SUBURB" = "Suburb/Town Name", "Local Government Area"))
+# Filter by year
+criminal_incidents_lga_suburb <- criminal_incidents_lga_suburb %>% filter(Year == "2020")
 
-house_medians_criminal_incidents %>% head()
+# View filtered values of year column
+criminal_incidents_lga_suburb$Year %>% unique()
 ```
-The house median prices and suburb-LGA datasets are then joined with the criminal incidents by suburb/LGA dataset which shows various types of offences that occurred within that suburb at any given time period.
+The crime incidents dataset reports crime incidents for the year ending September 2020. Thus, the time frame for one year from October 2019 to September 2020. As the time frame of interest for this project is only for the year ending Sept 2020, the dataset is filtered to only display the crimes that are committed in the year 2020.
 
 ```{r}
-# Joining house median criminal incidents df created above with criminal incidents charge status
-house_medians_criminal_incidents <- house_medians_criminal_incidents %>% left_join(criminal_incidents_charge_status, by = c("Local Government Area", "Year", "Year ending"))
+# Groupby and count "Offence Division"
+offence_division_count <- criminal_incidents_lga_suburb %>% group_by(`Suburb/Town Name`, Postcode, `Local Government Area`) %>% count(`Offence Division`)
+
+# Renaming newly created column
+names(offence_division_count)[names(offence_division_count) == "n"] <- "Offence Division Count"
+
+offence_division_count %>% head
+```
+
+```{r}
+# Joining house median prices with criminal incidents by LGA and Suburb
+house_medians_criminal_incidents <- house_medians %>% left_join(offence_division_count, by=c("SUBURB" = "Suburb/Town Name", "Local Government Area"))
 
 house_medians_criminal_incidents %>% head()
 ```
-The criminal incidents by charge status is joined with the other datasets above. This dataset shows the charge statuses of the crime incidents and their recorded number of incidents by LGA. There are a total of four datasets that have been merged above. 
+The house median prices and suburb-LGA datasets are then joined with the criminal incidents by suburb/LGA dataset which shows the count of various types of offences that occurred within that suburb in 2020.
 
 <br>
 <br>
@@ -190,7 +195,7 @@ house_medians_criminal_incidents %>% str()
 ```
 ```{r}
 # Storing supposed factor columns as an object
-fac_cols <- c("Suburb", "Local Government Area", "Postcode", "Year", "Year ending", "Offence Division", "Offence Subdivision", "Offence Subgroup")
+fac_cols <- c("Suburb", "Local Government Area", "Postcode", "Offence Division")
 
 # Converting characters to factors
 house_medians_criminal_incidents[fac_cols] <- lapply(house_medians_criminal_incidents[fac_cols], as.factor)
@@ -202,22 +207,12 @@ The output above displays the structure of the dataframe after conversion of var
 
 ```{r}
 # Rearranging variables within dataframe
-house_medians_criminal_incidents <- house_medians_criminal_incidents[,c("Suburb", "Postcode", "Local Government Area", "Jul - Sep 19", "Oct - Dec 19", "Jan - Mar 20", "Apr- Jun 20", "Jul - Sep 20", "No of sales Jul - Sep 20", "No of Sales YTD", "Change % Jul - Sep 19 Jul - Sep 20", "Change % Apr - Jun 20 Jul - Sep 20", "Year", "Year ending", "Offence Division", "Offence Subdivision", "Offence Subgroup", "Incidents Recorded", "Charges laid", "No charges laid", "Unsolved")]
+house_medians_criminal_incidents <- house_medians_criminal_incidents[,c("Suburb", "Postcode", "Local Government Area", "Jul - Sep 19", "Oct - Dec 19", "Jan - Mar 20", "Apr- Jun 20", "Jul - Sep 20", "No of sales Jul - Sep 20", "No of Sales YTD", "Change % Jul - Sep 19 Jul - Sep 20", "Change % Apr - Jun 20 Jul - Sep 20", "Offence Division", "Offence Division Count")]
 
 # View dataframe
 house_medians_criminal_incidents %>% head()
 ```
-```{r}
-# Filtering rows
-house_medians_criminal_incidents <- house_medians_criminal_incidents %>% filter(Year == "2020")
-
-# Renaming column
-names(house_medians_criminal_incidents)[names(house_medians_criminal_incidents) == "Year"] <- "Crime Year" 
-
-# View dataframe
-house_medians_criminal_incidents$`Crime Year` %>% unique()
-```
-The crime incidents dataset reports crime incidents for the year ending September 2020. Thus, the time frame for one year from October 2019 to September 2020. As the time frame of interest for this project is only for the year ending Sept 2020, the dataset is filtered to only display the crimes that are committed in the year 2020.
+The above output displays the rearranged columns of the dataframe. Suburb, postcode and LGA and rearranged to be side-by-side to allow for identification of suburbs and their corresponding postcodes and LGAs.
 
 <br>
 <br>
@@ -225,24 +220,9 @@ The crime incidents dataset reports crime incidents for the year ending Septembe
 ##	**Tidy & Manipulate Data I **
 ```{r}
 # Display section of untidy data
-house_medians_criminal_incidents %>% select("Charges laid", "No charges laid", "Unsolved")
-```
-The above output displays portion of the data that do not conform to the tidy data rules. "Charges laid", "No charges laid" and "Unsolved" are values of a variable, not a variable of its own. 
-
-```{r}
-# Transform data
-house_medians_criminal_incidents <- house_medians_criminal_incidents %>% pivot_longer(names_to = "Charge Status", values_to = "No. of Incidents Recorded (LGA)", cols = c("Charges laid", "No charges laid", "Unsolved"))
-
-# View transformed data
-house_medians_criminal_incidents %>% select("Charge Status", "No. of Incidents Recorded (LGA)")
-```
-The pivot_longer() function was applied on the columns that required to be transformed from wide to long format. A variable name "Charge Status" was assigned to represent the values "Charges laid", "No charges laid" and "Unsolved". A "No. of Incidents Recorded (LGA)" variable was created to represent the number of recorded criminal incidents within any given LGA that were either charged, not charged or unsolved.
-
-```{r}
-# Display other section of data that requires tidying
 house_medians_criminal_incidents %>% select("Jul - Sep 19", "Oct - Dec 19", "Jan - Mar 20", "Apr- Jun 20", "Jul - Sep 20")
 ```
-The above output displays the median house prices of multiple quarters within the years 2019 and 2020. These quarters are stored as variables. However, they represent the values of annually quarters.
+The above output displays portion of the data that do not conform to the tidy data rules. They are the median house prices of multiple quarters within the years 2019 and 2020. These quarters are stored as variables. However, they represent the values of annually quarters.
 
 ```{r}
 # Transform data
@@ -276,7 +256,7 @@ Since multiple variables (months and year) are stored in one column, they are th
 
 ```{r}
 # Rearranging of variables
-house_medians_criminal_incidents <- house_medians_criminal_incidents[,c("Suburb", "Postcode", "Local Government Area", "Quarter", "Year", "Median Price", "No of sales Jul - Sep 20", "No of Sales YTD", "Change % Jul - Sep 19 Jul - Sep 20", "Change % Apr - Jun 20 Jul - Sep 20", "Crime Year", "Year ending", "Offence Division", "Offence Subdivision", "Offence Subgroup", "Incidents Recorded", "Charge Status", "No. of Incidents Recorded (LGA)")]
+house_medians_criminal_incidents <- house_medians_criminal_incidents[,c("Suburb", "Postcode", "Local Government Area", "Quarter", "Year", "Median Price", "No of sales Jul - Sep 20", "No of Sales YTD", "Change % Jul - Sep 19 Jul - Sep 20", "Change % Apr - Jun 20 Jul - Sep 20", "Offence Division", "Offence Division Count")]
 
 # Rename column "Incidents Recorded"
 names(house_medians_criminal_incidents)[names(house_medians_criminal_incidents) == "Incidents Recorded"] <- "Incidents Recorded (Suburb)"
@@ -290,9 +270,14 @@ house_medians_criminal_incidents %>% head()
 The columns are rearranged for organisation and Q3 2019 of median house prices are excluded since the time frame of interest is Q4 2019 to Q3 2020.
 
 ```{r}
+# View structure of dataframe
+house_medians_criminal_incidents %>% str()
+```
+
+```{r}
 # Factoring of newly created variables
 # Storing supposed factor columns as an object
-fac_cols1 <- c("Quarter", "Year", "Charge Status")
+fac_cols1 <- c("Quarter", "Year")
 
 # Converting characters to factors
 house_medians_criminal_incidents[fac_cols1] <- lapply(house_medians_criminal_incidents[fac_cols1], as.factor)
@@ -306,11 +291,10 @@ The newly created variables from the pivot_longer() and separate() functions wer
 <br>
 
 ## **Tidy & Manipulate Data II** 
-
 ```{r}
-# This is the R chunk for the Tidy & Manipulate Data II 
 
 ```
+
 
 Provide explanations here. 
 

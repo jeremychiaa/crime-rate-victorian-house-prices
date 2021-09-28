@@ -317,7 +317,11 @@ The above output shows the number of missing values in each column of the datafr
 na_count/dim(house_medians_criminal_incidents)[1]
 ```
 From the above proportion table, there are 4 columns that have 1.38% null values and one column with 1.12% null values.
+In hindsight, the missing values are the same across the Postcode, Offence Division, Total Offence Division Count (Year) and the Average Offence Division Count / Quarter due to the joining/merging of the datasets earlier. As the first dataset of House Median Prices contained all median prices of houses for each suburb (from performing a left join), the missing values were caused by the second dataset of Criminal Incidents by Suburb and LGA. This simply means that despite there being median prices for the suburbs, there were no records of criminal incidents for those suburbs.
 
+```{r}
+
+```
 <br>
 <br>
 

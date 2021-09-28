@@ -139,15 +139,21 @@ criminal_incidents_lga_suburb$Year %>% unique()
 ```
 The crime incidents dataset reports crime incidents for the year ending September 2020. Thus, the time frame for one year from October 2019 to September 2020. As the time frame of interest for this project is only for the year ending Sept 2020, the dataset is filtered to only display the crimes that are committed in the year 2020.
 
+<br>
+<br>
+
+## **Tidy & Manipulate Data II** 
+
 ```{r}
 # Groupby and count "Offence Division"
 offence_division_count <- criminal_incidents_lga_suburb %>% group_by(`Suburb/Town Name`, Postcode, `Local Government Area`) %>% count(`Offence Division`)
 
 # Renaming newly created column
-names(offence_division_count)[names(offence_division_count) == "n"] <- "Offence Division Count"
+names(offence_division_count)[names(offence_division_count) == "n"] <- "Total Offence Division Count (Year)"
 
 offence_division_count %>% head
 ```
+The initial dataset of criminal incidents by LGA and suburb show the count of various types of offence divisions, offence subdivisions and offence subgroups in fine granularity. Assuming we are only interested in the broader offence division without accounting for offence subdivisions and offence subgroups in each suburb for the year 2020, a new column of "Offence Division Count" is created to display the count of general offence divisions committed in each suburb in 2020.
 
 ```{r}
 # Joining house median prices with criminal incidents by LGA and Suburb
@@ -207,7 +213,7 @@ The output above displays the structure of the dataframe after conversion of var
 
 ```{r}
 # Rearranging variables within dataframe
-house_medians_criminal_incidents <- house_medians_criminal_incidents[,c("Suburb", "Postcode", "Local Government Area", "Jul - Sep 19", "Oct - Dec 19", "Jan - Mar 20", "Apr- Jun 20", "Jul - Sep 20", "No of sales Jul - Sep 20", "No of Sales YTD", "Change % Jul - Sep 19 Jul - Sep 20", "Change % Apr - Jun 20 Jul - Sep 20", "Offence Division", "Offence Division Count")]
+house_medians_criminal_incidents <- house_medians_criminal_incidents[,c("Suburb", "Postcode", "Local Government Area", "Jul - Sep 19", "Oct - Dec 19", "Jan - Mar 20", "Apr- Jun 20", "Jul - Sep 20", "No of sales Jul - Sep 20", "No of Sales YTD", "Change % Jul - Sep 19 Jul - Sep 20", "Change % Apr - Jun 20 Jul - Sep 20", "Offence Division", "Total Offence Division Count (Year)")]
 
 # View dataframe
 house_medians_criminal_incidents %>% head()
@@ -255,11 +261,8 @@ house_medians_criminal_incidents %>% select("Quarter", "Year")
 Since multiple variables (months and year) are stored in one column, they are then split into two seperate columns. The months (Jan-Mar, Apr-Jun, Jul-Sep, Oct-Dec) could potentially be confusing so they are renamed to Q1, Q2, Q3 and Q4 respectively. Hence, these variables now have their own columns with values located in each cell.
 
 ```{r}
-# Rearranging of variables
-house_medians_criminal_incidents <- house_medians_criminal_incidents[,c("Suburb", "Postcode", "Local Government Area", "Quarter", "Year", "Median Price", "No of sales Jul - Sep 20", "No of Sales YTD", "Change % Jul - Sep 19 Jul - Sep 20", "Change % Apr - Jun 20 Jul - Sep 20", "Offence Division", "Offence Division Count")]
-
-# Rename column "Incidents Recorded"
-names(house_medians_criminal_incidents)[names(house_medians_criminal_incidents) == "Incidents Recorded"] <- "Incidents Recorded (Suburb)"
+# Rearranging of variables and excluding irrelevant variables
+house_medians_criminal_incidents <- house_medians_criminal_incidents[,c("Suburb", "Postcode", "Local Government Area", "Quarter", "Year", "Median Price", "Offence Division", "Total Offence Division Count (Year)")]
 
 # Excluding Q3 2019 of median house prices
 house_medians_criminal_incidents <- house_medians_criminal_incidents %>% filter(!(Quarter == "Q3" & Year == 2019))
@@ -268,6 +271,15 @@ house_medians_criminal_incidents <- house_medians_criminal_incidents %>% filter(
 house_medians_criminal_incidents %>% head()
 ```
 The columns are rearranged for organisation and Q3 2019 of median house prices are excluded since the time frame of interest is Q4 2019 to Q3 2020.
+
+
+```{r}
+# Create new variable that shows average offence division count per quarter
+house_medians_criminal_incidents <- house_medians_criminal_incidents %>% mutate("Average Offence Division Count / Quarter" = `Total Offence Division Count (Year)`/4)
+
+house_medians_criminal_incidents
+```
+Since the dataset only includes the total offence division count for the year but not the quarterly crime numbers count, a new variable of "Average Offence Division Count / Quarter" is created by dividing the total count per year by the number of quarters a year. This is not a safe assumption to make but is one that is more representative of the crime numbers per quarter as opposed to the total crime numbers for the year. This decision is made in line with each observation being a quarterly time frame period.
 
 ```{r}
 # View structure of dataframe
@@ -290,25 +302,21 @@ The newly created variables from the pivot_longer() and separate() functions wer
 <br>
 <br>
 
-## **Tidy & Manipulate Data II** 
-```{r}
-
-```
-
-
-Provide explanations here. 
-
-<br>
-<br>
-
 ##	**Scan I **
 
 ```{r}
-# This is the R chunk for the Scan I
+# Identify count of NAs in each column of the dataframe
+na_count <- sapply(house_medians_criminal_incidents, function(x) sum(length(which(is.na(x)))))
 
+na_count
 ```
+The above output shows the number of missing values in each column of the dataframe.
 
-Provide explanations here. 
+```{r}
+# Getting proportions of NAs over each variable
+na_count/dim(house_medians_criminal_incidents)[1]
+```
+From the above proportion table, there are 4 columns that have 1.38% null values and one column with 1.12% null values.
 
 <br>
 <br>

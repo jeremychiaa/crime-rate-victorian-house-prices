@@ -26,7 +26,7 @@ library(readxl)
 library(openxlsx)
 library(ggplot2)
 library(tools)
-library(editrules)
+
 ```
 
 
@@ -255,7 +255,7 @@ Before separating the variables, the names of values of "Quarter / Year" are ren
 
 ```{r}
 # Separating Quarter and Year into different columns
-house_medians_criminal_incidents <- house_medians_criminal_incidents %>% separate(`Quarter / Year`, into = c("Quarter", "Year"), sep = " ")
+house_medians_criminal_incidents <- house_medians_criminal_incidents %>% tidyr::separate(`Quarter / Year`, into = c("Quarter", "Year"), sep = " ")
 house_medians_criminal_incidents %>% select("Quarter", "Year")
 ```
 Since multiple variables (months and year) are stored in one column, they are then split into two seperate columns. The months (Jan-Mar, Apr-Jun, Jul-Sep, Oct-Dec) could potentially be confusing so they are renamed to Q1, Q2, Q3 and Q4 respectively. Hence, these variables now have their own columns with values located in each cell.
@@ -376,15 +376,49 @@ As the "Median Price", "Total Offence Division Count (Year)" and "Average Offenc
 ##	**Scan II**
 
 ```{r}
-# Visualise potential outliers on a boxplot
+# Visualise potential outliers on a boxplot for median price
 house_medians_criminal_incidents$`Median Price` %>% boxplot(main = "Boxplot of Median Price", ylab="Price ($)")
 ```
+Looking at the boxplot of median price, there seems to be quite a number of possible outliers that sit above the 1.5 * IQR fence, indicating the possible outliers to be high house prices, with values above the $2,000,000 price.
 
-Provide explanations here. 
+```{r}
+# Visualise potential outliers on a boxplot for Average Offence Division Count per Quarter
+house_medians_criminal_incidents$`Average Offence Division Count / Quarter` %>% boxplot(main = "Boxplot of Average Offence Division Count", ylab="Count")
+```
+From the boxplot of average offence division count, there is only one outlier that sits above the 1.5 * IQR fence. Also indicating that the possible outlier is an average offence count of 5.
 
 ```{r}
 hist(house_medians_criminal_incidents$`Median Price`)
 ```
+The distribution of Median Price is positively skewed.
+
+```{r}
+hist(house_medians_criminal_incidents$`Average Offence Division Count / Quarter`)
+```
+The distribution of the Average Offence Division Count / Quarter is also positively skewed.
+
+```{r}
+house_medians_criminal_incidents %>% plot(`Median Price` ~ `Average Offence Division Count / Quarter`, data = ., ylab = "Price ($)", xlab = "Count", main = "Median Price by Crime Count")
+```
+As we are investigating and understanding the relationship between Average Offence Division Count and Median Price, a scatterplot is plotted to show the bivariate distribution between Average Offence Division Count and Median Price.
+
+By observing the scatterplot, there is an indication that the possible outliers lie on the upper portion of the scatter, where house median prices are high and crime count varies. However, the scatter still seems relatively evenly scattered with most of the them clustered on the bottom half of the scatter. The upper half has significantly fewer data points but they are also relatively evenly scattered. Thus, suggesting they may not be outliers.
+
+```{r}
+# Inspect rows of possible outliers
+p_outliers <- house_medians_criminal_incidents[, c("Suburb", "Median Price", "Average Offence Division Count / Quarter")] %>% filter(`Median Price` >= 3500000)
+
+# Display table
+p_outliers
+```
+```{r}
+# View suburbs with high median price
+p_outliers$Suburb %>% unique()
+```
+Upon inspection of the rows where the scatter sits on the top half of the scatterplot, these values do not seem to fall under any of the common categories of outlier causes. The suburbs with a median price of over $3,500,000 are Deepdene, East Melbourne and Toorak. These few suburbs are historically known to be "posh" with grand, prestigous and established homes situated in strategic locations. Therefore, we can disregard these rows as errors caused by data entry or data processing.
+
+In conclusion, the decision is to leave these rows within the dataframe as they will be critical for future analysis.
+
 <br>
 <br>
 

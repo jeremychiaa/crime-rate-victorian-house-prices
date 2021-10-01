@@ -51,12 +51,13 @@ s %>% kbl(caption = "Group information") %>%
 
 ## **Executive Summary**
 
-In your own words, provide a brief summary of the preprocessing. Explain the steps that you have taken to preprocess your data. Write this section last after you have performed all data preprocessing. (Word count Max: 300 words)
-You may use bulleted lists like this:
-
-* a
-* b
-* ....
+* Datasets of Median House Prices and Criminal Incidents by Suburb and LGA are loaded into the workspace. After loading the datasets, they are formatted to a desired format by fixing column headers to allow for joining/merging of datasets. The dataset is also filtered to only display data from the year 2020. 
+* After the joining of datasets, the process of tidying & manipulating is done by grouping the dataset by the selected variables to retrieve the total crime count within each LGA. After the creation of a new variable, it is then joined with the main dataset.
+* By understanding the dataset, the various attributes and structure of the dataset were converted to their most accurate data types that will aid in future analysis. Columns that are considered redundant are removed in this step.
+* The section of the data that do not conform to tidy data rules are fixed to ensure that each variable has its own column and values are recorded within rows. Variables that are supposed to be values are dealt with in an appropriate manner. As the dataset only included criminal incidents for suburbs by year, the dataset is mutated to include a new variable that displays the average criminal incidents count per quarter of the year. New variables created are converted to their rightful data structures.
+* The dataset is scanned for missing values. It was determined that the missing values were caused by the lack of information/data within the Criminal Incidents by Suburb and LGA dataset. Thus, causing some suburbs to not have crime data. The decision was made to drop all the rows of missing values which make up a proportion of 1.38% of the entire dataset.
+* As the distribution between the variables being investigated are bivariate, a scatterplot is used to determine the scale of possible outliers within the dataset. The scale of possible outliers and distribution of univariate outliers were also investigated here. A decision to maintain all rows was made as these possible outliers were not caused by any form of error and is critical for future analysis.
+*
 
 <br>
 <br>

@@ -51,7 +51,7 @@ Crime Statistics Agency (https://www.crimestatistics.vic.gov.au/crime-statistics
 - Incidents Recorded - Number of crimes recorded
 
 ## Tools and Technologies
-Scripting language: R
-Editor: RStudio
-Format: RMarkdown
-Packages: kableExtra, magrittr, dplyr, tidyr, readr, readxl, openxlsx, ggplot2, tools, forecast
+- Scripting language: R
+- Editor: RStudio
+- Format: RMarkdown
+- Packages: kableExtra, magrittr, dplyr, tidyr, readr, readxl, openxlsx, ggplot2, tools, forecast

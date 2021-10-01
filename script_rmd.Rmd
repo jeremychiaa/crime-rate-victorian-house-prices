@@ -15,7 +15,7 @@ output:
 
 ```{r}
 
-# Load the necessary packages required to reproduce the report. For example:
+# Load necessary packages
 
 library(kableExtra)
 library(magrittr)
@@ -26,6 +26,7 @@ library(readxl)
 library(openxlsx)
 library(ggplot2)
 library(tools)
+library(forecast)
 
 ```
 
@@ -399,16 +400,6 @@ house_medians_criminal_incidents$`Average Offence Division Count / Quarter` %>% 
 From the boxplot of average offence division count, there is only one outlier that sits above the 1.5 * IQR fence. Also indicating that the possible outlier is an average offence count of 5.
 
 ```{r}
-hist(house_medians_criminal_incidents$`Median Price`)
-```
-The distribution of Median Price is positively skewed.
-
-```{r}
-hist(house_medians_criminal_incidents$`Average Offence Division Count / Quarter`)
-```
-The distribution of the Average Offence Division Count / Quarter is also positively skewed.
-
-```{r}
 house_medians_criminal_incidents %>% plot(`Median Price` ~ `Average Offence Division Count / Quarter`, data = ., ylab = "Price ($)", xlab = "Count", main = "Median Price by Crime Count")
 ```
 As we are investigating and understanding the relationship between Average Offence Division Count and Median Price, a scatterplot is plotted to show the bivariate distribution between Average Offence Division Count and Median Price.
@@ -436,13 +427,65 @@ In conclusion, the decision is to leave these rows within the dataframe as they 
 ##	**Transform **
 
 ```{r}
-# This is the R chunk for the Transform Section
+# Plot histogram of median price
+hist(house_medians_criminal_incidents$`Median Price`, main = "Histogram of Median Price")
+```
+The distribution of Median Price is positively skewed.
 
+```{r}
+# Plot histogram of average offence division count
+hist(house_medians_criminal_incidents$`Average Offence Division Count / Quarter`, main = "Histogram of Average Offence Division Count")
+```
+The distribution of the Average Offence Division Count / Quarter is also positively skewed.
+
+```{r}
+# Save dataframe in new object
+transformed_house_medians_criminal_incidents <- house_medians_criminal_incidents
+
+# Transform median house prices
+transformed_house_medians_criminal_incidents$`Median Price` <- BoxCox(transformed_house_medians_criminal_incidents$`Median Price`, lambda = "auto")
 ```
 
-Provide explanations here. 
+```{r}
+# View portion of transformed data
+transformed_house_medians_criminal_incidents$`Median Price` %>% head(10)
+```
+
+```{r}
+# Plot histograms of transformed variables
+transformed_house_medians_criminal_incidents$`Median Price` %>% hist(main = "Histogram of Transformed Median Price")
+```
+By using the BoxCox transformation, the Median Price variable was transformed from a positively skewed distribution to a symmetrical distribution.
 
 
+```{r}
+# Using BoxCox transformation to transform average offence division count / quarter
+BoxCox(transformed_house_medians_criminal_incidents$`Average Offence Division Count / Quarter`, lambda = "auto") %>% hist(main = "BoxCox Transformation of Average Offence Division Count / Quarter")
+```
+The BoxCox transformation has not been successful in transforming the average offence division count / quarter variable.
+
+```{r}
+# Using Log10 to transform average offence division count / quarter
+log10(transformed_house_medians_criminal_incidents$`Average Offence Division Count / Quarter`) %>% hist(main = "log10 of Average Offence Division Count / Quarter")
+```
+```{r}
+# Using the natural logarithm to transform average offence division count / quarter
+log(transformed_house_medians_criminal_incidents$`Average Offence Division Count / Quarter`) %>% hist(main = "ln of Average Offence Division Count / Quarter")
+```
+```{r}
+# Using the square root to transform average offence division count / quarter
+sqrt(transformed_house_medians_criminal_incidents$`Average Offence Division Count / Quarter`) %>% hist(main = "Square Root of Average Offence Division Count / Quarter")
+```
+```{r}
+# Assigning square root of average offence division count / quarter to an object
+transformed_house_medians_criminal_incidents$`Average Offence Division Count / Quarter` <- sqrt(transformed_house_medians_criminal_incidents$`Average Offence Division Count / Quarter`)
+```
+
+```{r}
+# View portion of transformed data
+transformed_house_medians_criminal_incidents$`Average Offence Division Count / Quarter` %>% head(10)
+```
+As the distribution of the Average Offence Division Count / Quarter is positively skewed, the BoxCox, log10, natural logarithm and square root transformations were applied on the values of the variable. After applying these transformations, none of the them yielded a perfect symmetrical distribution. However, visually, the square root transformation seems to work best on the Average Offence Division Count / Quarter variable. Hence, the square root transformation is chosen.
 
 <br>
 <br>

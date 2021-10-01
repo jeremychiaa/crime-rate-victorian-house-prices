@@ -70,7 +70,7 @@ Description:
 This dataset lists the percentage shift in median prices between quarters as well as the change over a 12-month period for Victorian houses.
 
 Variables:
-Suburb - All suburbs in Victoria, Austraalia
+Suburb - All suburbs in Victoria, Australia
 Jul-Sep 19 - Median house prices for that period
 Oct-Dec 19 - Median house prices for that period
 Jan-Mar 20 - Median house prices for that period
@@ -81,19 +81,29 @@ No of Sales YTD - Year to date number of house sales
 Change % Jul-Sep 19 Jul-Sep 19 - Percentage change in median house price between two periods
 Change % Apr-Jun 20 Jul-Sep 20 - Percentage change in median house price between two periods
 
-Source 2: Crime Statistics Agency (https://www.crimestatistics.vic.gov.au/crime-statistics/historical-crime-data/download-data-3)
-Description: There are five tables within this excel workbook. 
-The datasets of interest are chosen from these five tables:
-- The crime rate by principal offence, LGA and police service area dataset
-- Criminal incidents by LGA and suburb dataset
-- Criminal incidents by charge status and LGA dataset
+
+Source 2:
+Crime Statistics Agency (https://www.crimestatistics.vic.gov.au/crime-statistics/historical-crime-data/download-data-3)
+
+Description:
+There are five tables within this excel workbook. 
+The dataset of interest chosen is:
+Criminal Incidents by principal offence, local government area and postcode or suburb/town
 
 Variables:
+Year - Displays the year when the crime was committed/recorded
+Year ending - The month when a full year is recorded (September for this dataset)
+Local Government Area - The LGA where the crime was committed/recorded
+Postcode - The postcode of the suburb where the crime was committed/recorded
+Suburb/Town Name - The suburb where the crime was committed/recorded
+Offence Division - General category of the crime committed/recorded
+Offence Subdivision - Offence division specific category of crime committed/recorded
+Offence Subgroup - Subgroup of crime committed/recorded (Finest granularity of crime category)
+Incidents Recorded - Number of crimes recorded
 
 
 ```{r}
-# Import the data, provide your R codes here.
-
+# Import data
 # House median prices dataset
 house_medians <- read_excel("data/House_Medians3rdQtr2020.xls", skip = 1)
 

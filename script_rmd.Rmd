@@ -14,9 +14,7 @@ output:
 ## **Setup**
 
 ```{r}
-
 # Load necessary packages
-
 library(kableExtra)
 library(magrittr)
 library(dplyr)
@@ -27,14 +25,10 @@ library(openxlsx)
 library(ggplot2)
 library(tools)
 library(forecast)
-
 ```
-
-
 ## **Student names, numbers and percentage of contributions**
-```{r, echo=FALSE}
 
-# Add your names, numbers and percentage of your contribution here.
+```{r, echo=FALSE}
 
 na<- c("Jeremy Jian Zhi Chia")
 no<- c("s3917515")
@@ -58,12 +52,13 @@ s %>% kbl(caption = "Group information") %>%
 * The section of the data that do not conform to tidy data rules are fixed to ensure that each variable has its own column and values are recorded within rows. Variables that are supposed to be values are dealt with in an appropriate manner. As the dataset only included criminal incidents for suburbs by year, the dataset is mutated to include a new variable that displays the average criminal incidents count per quarter of the year. New variables created are converted to their rightful data structures.
 * The dataset is scanned for missing values. It was determined that the missing values were caused by the lack of information/data within the Criminal Incidents by Suburb and LGA dataset. Thus, causing some suburbs to not have crime data. The decision was made to drop all the rows of missing values which make up a proportion of 1.38% of the entire dataset.
 * As the distribution between the variables being investigated are bivariate, a scatterplot is used to determine the scale of possible outliers within the dataset. The scale of possible outliers and distribution of univariate outliers were also investigated here. A decision to maintain all rows was made as these possible outliers were not caused by any form of error and is critical for future analysis.
-*
+* The distributions of the quantitative variables were inspected and proper transformation techniques were applied to achieve symmetrical distributions. Various transformation techniques were used and the one that worked best was chosen to transform the skewed distribution.
 
 <br>
 <br>
 
 ## **Data**
+
 Source 1:
 Data Vic (https://discover.data.vic.gov.au/dataset/victorian-property-sales-report-median-house-by-suburb)
 
